@@ -41,7 +41,7 @@ export default function Index() {
                   <div className="w-2 h-2 bg-primary rounded-full"></div>
                   <span>UX/UI ДИЗАЙНЕР</span>
                 </div>
-                <h1 className="font-serif text-6xl lg:text-8xl font-bold tracking-tight">Пр</h1>
+                <h1 className="font-serif text-6xl lg:text-8xl font-bold tracking-tight my-2">При</h1>
                 <div className="space-y-2">
                   <p className="text-xl lg:text-2xl font-light text-muted-foreground">
                     Создаю пользовательские интерфейсы
