@@ -92,7 +92,7 @@ export default function Index() {
                 <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-secondary/20 rounded-3xl transform rotate-6"></div>
                 <div className="relative bg-card rounded-3xl overflow-hidden border border-border">
                   <img
-                    src="https://cdn.poehali.dev/projects/9ec23f49-8a76-49b6-a9cb-45e1daa12c7f/files/acf72526-aa18-4fff-b9e7-6f6a420bd71c.jpg"
+                    src="https://cdn.poehali.dev/projects/9ec23f49-8a76-49b6-a9cb-45e1daa12c7f/files/c3293346-a0e5-47d2-9a0a-87dcc4d5e80f.jpg"
                     alt="Анна Петрова - UX/UI Дизайнер"
                     className="w-full h-full object-cover"
                   />
