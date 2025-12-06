@@ -2,12 +2,22 @@ import json
 import os
 import base64
 import uuid
-import requests
+import boto3
 from typing import Dict, Any
+
+s3 = boto3.client(
+    's3',
+    endpoint_url='https://bucket.poehali.dev',
+    aws_access_key_id=os.environ['AWS_ACCESS_KEY_ID'],
+    aws_secret_access_key=os.environ['AWS_SECRET_ACCESS_KEY'],
+)
+
+PROJECT_ID = os.environ.get('PROJECT_ID', 'default')
+BUCKET_NAME = f'poehali-{PROJECT_ID}'
 
 def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     '''
-    Загрузка фотографий через Poehali CDN
+    Загрузка фотографий в S3 хранилище
     Принимает: POST с JSON {photos: [{name, data}]} где data это base64
     Возвращает: {urls: [string]} массив публичных URL загруженных фото
     '''
@@ -51,7 +61,6 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             'isBase64Encoded': False
         }
     
-    project_id = os.environ.get('PROJECT_ID', 'default')
     uploaded_urls = []
     
     for photo in photos:
@@ -70,11 +79,18 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         
         # Генерируем уникальное имя файла
         file_extension = photo_name.split('.')[-1] if '.' in photo_name else 'jpg'
-        unique_id = str(uuid.uuid4())
-        unique_name = f"{unique_id}.{file_extension}"
+        unique_name = f"photos/{uuid.uuid4()}.{file_extension}"
         
-        # Формируем публичный URL через Poehali CDN
-        public_url = f"https://cdn.poehali.dev/projects/{project_id}/files/{unique_id}.{file_extension}"
+        # Загружаем в S3
+        s3.put_object(
+            Bucket=BUCKET_NAME,
+            Key=unique_name,
+            Body=image_bytes,
+            ContentType=f'image/{file_extension}'
+        )
+        
+        # Формируем публичный URL
+        public_url = f"https://cdn.poehali.dev/projects/{PROJECT_ID}/files/{unique_name}"
         uploaded_urls.append(public_url)
     
     return {
