@@ -6,25 +6,64 @@ import Icon from "@/components/ui/icon";
 interface Photo {
   id: string;
   url: string;
-  file: File;
 }
+
+const BACKEND_URL = "https://functions.poehali.dev/fba7f495-b7c5-481a-a485-57d522e0d47b";
 
 export default function PhotoGalleryWidget() {
   const [photos, setPhotos] = useState<Photo[]>([]);
   const [selectedPhoto, setSelectedPhoto] = useState<Photo | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const convertToBase64 = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = (error) => reject(error);
+    });
+  };
+
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files) return;
 
-    const newPhotos: Photo[] = Array.from(files).map((file) => ({
-      id: Math.random().toString(36).substr(2, 9),
-      url: URL.createObjectURL(file),
-      file,
-    }));
+    setIsUploading(true);
 
-    setPhotos((prev) => [...prev, ...newPhotos]);
+    try {
+      const photosData = await Promise.all(
+        Array.from(files).map(async (file) => ({
+          name: file.name,
+          data: await convertToBase64(file),
+        }))
+      );
+
+      const response = await fetch(BACKEND_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ photos: photosData }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Upload failed");
+      }
+
+      const result = await response.json();
+      const newPhotos: Photo[] = result.urls.map((url: string) => ({
+        id: Math.random().toString(36).substr(2, 9),
+        url,
+      }));
+
+      setPhotos((prev) => [...prev, ...newPhotos]);
+    } catch (error) {
+      console.error("Error uploading photos:", error);
+      alert("Ошибка при загрузке фото. Попробуйте еще раз.");
+    } finally {
+      setIsUploading(false);
+    }
   };
 
   const handleUploadClick = () => {
@@ -45,10 +84,11 @@ export default function PhotoGalleryWidget() {
           <h3 className="font-serif text-2xl font-semibold">Фото галерея</h3>
           <Button
             onClick={handleUploadClick}
+            disabled={isUploading}
             className="bg-primary text-primary-foreground hover:bg-primary/90"
           >
             <Icon name="Upload" size={16} className="mr-2" />
-            Загрузить фото
+            {isUploading ? "Загружаю..." : "Загрузить фото"}
           </Button>
           <input
             ref={fileInputRef}
@@ -57,6 +97,7 @@ export default function PhotoGalleryWidget() {
             multiple
             onChange={handleFileSelect}
             className="hidden"
+            disabled={isUploading}
           />
         </div>
 
