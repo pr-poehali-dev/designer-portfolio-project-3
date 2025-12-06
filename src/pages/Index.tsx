@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import Icon from "@/components/ui/icon";
+import PhotoGalleryWidget from "@/components/PhotoGalleryWidget";
 
 export default function Index() {
   return (
@@ -106,6 +107,13 @@ export default function Index() {
               </div>
             </div>
           </div>
+        </div>
+      </section>
+
+      {/* Photo Gallery Widget */}
+      <section className="py-20">
+        <div className="container mx-auto px-6">
+          <PhotoGalleryWidget />
         </div>
       </section>
 
